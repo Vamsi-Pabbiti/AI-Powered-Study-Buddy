@@ -1,0 +1,148 @@
+🧠 AI-Powered Study Buddy
+An AI-driven study companion that explains complex topics in simple terms, summarizes notes (including uploaded PDF/DOCX/PPTX/TXT files), generates quizzes, and creates flashcards — all powered by Groq's LLaMA 3.3 70B model.
+
+---
+✨ Features
+💡 Topic Explainer — explanations at simple, medium, or advanced level
+📄 Notes Summarizer — paste text or upload PDF / DOCX / PPTX / TXT files
+🏆 Quiz Generator — auto-generated MCQs with instant scoring and explanations
+🗂️ Flashcard Generator — flip-card style study cards
+🕘 Study History — tracks and stores all past sessions per user
+🔐 Authentication — JWT-based login & register
+🌓 Dark / Light Mode
+---
+🛠️ Tech Stack
+Layer	Technology
+Frontend	React (Vite) + Tailwind CSS
+Backend	FastAPI (Python)
+Database	MongoDB Atlas
+AI	Groq API (LLaMA 3.3 70B)
+Auth	JWT + Bcrypt
+File Parsing	PyMuPDF, python-docx, python-pptx
+---
+📁 Project Structure
+```
+study-buddy/
+├── backend/
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── .env
+│   ├── routers/
+│   │   ├── auth.py
+│   │   ├── ai.py
+│   │   └── history.py
+│   ├── models/
+│   │   └── schemas.py
+│   └── utils/
+│       ├── database.py
+│       └── auth_utils.py
+└── frontend/
+    ├── package.json
+    ├── tailwind.config.js
+    ├── .env
+    └── src/
+        ├── App.jsx
+        ├── main.jsx
+        ├── context/AuthContext.jsx
+        ├── pages/
+        │   ├── Login.jsx
+        │   ├── Register.jsx
+        │   └── Dashboard.jsx
+        └── components/
+            ├── Navbar.jsx
+            ├── Explainer.jsx
+            ├── Summarizer.jsx
+            ├── QuizGenerator.jsx
+            ├── Flashcards.jsx
+            └── History.jsx
+```
+---
+🚀 Getting Started (Local Setup)
+Prerequisites
+Python 3.10+
+Node.js 18+
+MongoDB (local or Atlas)
+Groq API key (console.groq.com)
+1. Clone the repo
+```bash
+git clone https://github.com/Vamsi-Pabbiti/ai-study-buddy.git
+cd ai-study-buddy
+```
+2. Backend setup
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # Mac/Linux
+
+pip install -r requirements.txt
+```
+Create `backend/.env`:
+```env
+MONGO_URL=mongodb://localhost:27017
+DB_NAME=study_buddy
+SECRET_KEY=your_secret_key_here
+GROQ_API_KEY=your_groq_api_key_here
+```
+Run the backend:
+```bash
+uvicorn main:app --reload --port 8000
+```
+API docs available at `http://localhost:8000/docs`
+3. Frontend setup
+```bash
+cd frontend
+npm install
+```
+Create `frontend/.env`:
+```env
+VITE_API_URL=http://localhost:8000
+```
+Run the frontend:
+```bash
+npm run dev
+```
+App runs at `http://localhost:3000`
+---
+🌐 Deployment
+Component	Platform
+Backend	Render
+Frontend	Vercel
+Database	MongoDB Atlas
+Backend (Render)
+Root directory: `backend`
+Build command: `pip install -r requirements.txt`
+Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+Add environment variables: `MONGO_URL`, `DB_NAME`, `SECRET_KEY`, `GROQ_API_KEY`
+Frontend (Vercel)
+Root directory: `frontend`
+Framework preset: Vite
+Build command: `npm run build`
+Output directory: `dist`
+Environment variable: `VITE_API_URL=<your-render-backend-url>`
+> ⚠️ Render's free tier spins down after 15 min of inactivity — first request after idle may take 30–50s to respond.
+---
+📡 API Endpoints
+Method	Endpoint	Description
+POST	`/api/auth/register`	Create a new account
+POST	`/api/auth/login`	Login and get JWT token
+POST	`/api/ai/explain`	Explain a topic
+POST	`/api/ai/summarize`	Summarize notes (text or file upload)
+POST	`/api/ai/quiz`	Generate a quiz
+POST	`/api/ai/flashcards`	Generate flashcards
+GET	`/api/history/`	Fetch user's study history
+DELETE	`/api/history/{id}`	Delete a history entry
+---
+📌 Roadmap
+[ ] OCR support for scanned PDFs and images
+[ ] Export quiz results as PDF
+[ ] Progress tracking and analytics dashboard
+[ ] Spaced-repetition scheduling for flashcards
+---
+👤 Author
+Vamsi Pabbiti
+B.Tech CSE (Data Science), NSRIT Visakhapatnam
+GitHub
+---
+📄 License
+MIT License — free to use and modify.
