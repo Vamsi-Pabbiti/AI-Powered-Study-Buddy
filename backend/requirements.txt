@@ -2,7 +2,11 @@ fastapi
 uvicorn
 motor
 python-dotenv
-bcrypt
+passlib[bcrypt]
 python-jose[cryptography]
-google-generativeai
+groq
 pydantic[email]
+python-multipart
+pymupdf
+python-docx
+python-pptx
