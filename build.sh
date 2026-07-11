@@ -4,7 +4,7 @@ set -o errexit
 # Build frontend
 cd frontend
 npm install
-npx vite build
+./node_modules/.bin/vite build
 
 # Copy into backend/static
 rm -rf ../backend/static
