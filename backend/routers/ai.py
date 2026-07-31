@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from models.schemas import ExplainRequest, QuizRequest, FlashcardRequest
+from utils.auth_utils import get_current_user
+from utils.database import get_db
+from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
@@ -68,27 +71,41 @@ def extract_text(file_bytes: bytes, filename: str) -> str:
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type. Use PDF, DOCX, PPTX, or TXT.")
 
+async def save_history(db, user_id, feature, input_text, output_text):
+    await db.history.insert_one({
+        "user_id": user_id, "feature": feature,
+        "input": input_text, "output": output_text,
+        "created_at": datetime.utcnow()
+    })
+
 @router.post("/explain")
-async def explain_topic(req: ExplainRequest):
+async def explain_topic(req: ExplainRequest, user_id: str = Depends(get_current_user)):
+    db = get_db()
     level_map = {
         "simple": "Explain like I'm 10 years old using simple words and fun analogies.",
         "medium": "Explain clearly for a high school student with examples.",
         "advanced": "Explain in depth for a college student, including technical details and theory."
     }
     prompt = f"{level_map[req.level]}\n\nTopic: {req.topic}\n\nStructure your response with clear sections and key points."
-    return {"result": ask_ai(prompt)}
+    result = ask_ai(prompt)
+    await save_history(db, user_id, "explain", req.topic, result)
+    return {"result": result}
 
 @router.post("/summarize")
 async def summarize_notes(
     style: str = Form("bullets"),
     notes: str = Form(""),
-    file: UploadFile = File(None)
+    file: UploadFile = File(None),
+    user_id: str = Depends(get_current_user)
 ):
+    db = get_db()
     if file and file.filename:
         file_bytes = await file.read()
         text = extract_text(file_bytes, file.filename)
+        source_label = file.filename
     elif notes.strip():
         text = notes
+        source_label = notes[:100] + "..."
     else:
         raise HTTPException(status_code=400, detail="Provide notes text or upload a file.")
 
@@ -101,10 +118,13 @@ async def summarize_notes(
         "key_points": "Extract the top 5-7 most important key points only."
     }
     prompt = f"{style_map.get(style, style_map['bullets'])}\n\nNotes:\n{text[:6000]}"
-    return {"result": ask_ai(prompt)}
+    result = ask_ai(prompt)
+    await save_history(db, user_id, "summarize", source_label, result)
+    return {"result": result}
 
 @router.post("/quiz")
-async def generate_quiz(req: QuizRequest):
+async def generate_quiz(req: QuizRequest, user_id: str = Depends(get_current_user)):
+    db = get_db()
     prompt = f"""Generate {req.num_questions} multiple choice questions on "{req.topic}" at {req.difficulty} difficulty.
 
 Return ONLY a JSON array, no markdown, no extra text:
@@ -121,10 +141,12 @@ Return ONLY a JSON array, no markdown, no extra text:
         questions = parse_json_array(text)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Quiz parse failed: {exc}")
+    await save_history(db, user_id, "quiz", req.topic, f"{req.num_questions} questions generated")
     return {"questions": questions}
 
 @router.post("/flashcards")
-async def generate_flashcards(req: FlashcardRequest):
+async def generate_flashcards(req: FlashcardRequest, user_id: str = Depends(get_current_user)):
+    db = get_db()
     prompt = f"""Create {req.num_cards} flashcards for studying "{req.topic}".
 
 Return ONLY a JSON array, no markdown, no extra text:
@@ -139,4 +161,5 @@ Return ONLY a JSON array, no markdown, no extra text:
         cards = parse_json_array(text)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Flashcard parse failed: {exc}")
+    await save_history(db, user_id, "flashcard", req.topic, f"{req.num_cards} flashcards generated")
     return {"flashcards": cards}
