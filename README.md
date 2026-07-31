@@ -222,3 +222,14 @@ Persistent dark mode — theme saved to localStorage and applied on every load
 👤 Author
 
 Vamsi Pabbiti
+
+
+how to run this project
+# Terminal 1 — Backend
+cd backend
+venv\Scripts\activate
+uvicorn main:app --reload --port 8000
+
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
