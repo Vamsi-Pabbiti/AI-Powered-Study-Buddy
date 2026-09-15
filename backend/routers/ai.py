@@ -15,7 +15,7 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 def ask_ai(prompt: str, max_tokens: int = 2000) -> str:
     try:
         response = client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.1-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=max_tokens
         )
