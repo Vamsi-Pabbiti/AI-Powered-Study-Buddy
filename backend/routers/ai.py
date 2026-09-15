@@ -2,26 +2,23 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from models.schemas import ExplainRequest, QuizRequest, FlashcardRequest
 from pathlib import Path
 from dotenv import load_dotenv
-from groq import Groq
 from pptx import Presentation
 from docx import Document
-import fitz
+import pymupdf as fitz
+import google.generativeai as genai
 import os, json, io
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 router = APIRouter()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 def ask_ai(prompt: str, max_tokens: int = 2000) -> str:
     try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens
-        )
-        return response.choices[0].message.content
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Groq API failed: {exc}")
+        raise HTTPException(status_code=502, detail=f"Gemini API failed: {exc}")
 
 def parse_json_array(text: str):
     cleaned = text.strip().replace("```json", "").replace("```", "").strip()
