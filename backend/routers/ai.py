@@ -11,7 +11,7 @@ import os, json, io
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 router = APIRouter()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("gemini-3.6-flash")
 
 def ask_ai(prompt: str, max_tokens: int = 2000) -> str:
     try:
